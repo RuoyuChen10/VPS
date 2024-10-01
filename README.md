@@ -10,14 +10,20 @@ For our interpretation method, the packages we use are relatively common. Please
 
 We provide code to explain Grounding DINO, but please install its dependencies first: [https://github.com/IDEA-Research/GroundingDINO](https://github.com/IDEA-Research/GroundingDINO).
 
+For explaining Florence-2, please install its dependencies: [https://huggingface.co/microsoft/Florence-2-large-ft](https://huggingface.co/microsoft/Florence-2-large-ft)
+
 
 ## 😮 Highlights
 
 We provide some results of our approach on interpreting object detection models.
 
 Grounding DINO:
-![](images/tank_insertion.jpg)
-![](images/tank_deletion.jpg)
+![](images/groundingdino_tank_insertion.jpg)
+![](images/groundingdino_tank_deletion.jpg)
+
+Florence-2:
+![](images/florence-2_tank_insertion.jpg)
+![](images/florence-2_tank_deletion.jpg)
 
 ## 👍 Acknowledgement
 
