@@ -147,7 +147,7 @@ class DetectionSubModularExplanation(object):
             # timer = time.time()
             
             ious = self.calculate_iou(bounding_boxes, self.target_box)
-            cls_score = logits[:,:,self.target_label]   # torch.Size([170, 900])
+            cls_score = logits[:,:,self.target_label].max(dim=-1)[0]   # torch.Size([170, 900])
             
             insertion_scores = (ious * cls_score).max(dim=-1)[0]
             
@@ -158,7 +158,7 @@ class DetectionSubModularExplanation(object):
             bounding_boxes_reverse, logits_reverse = self.process_in_batches(batch_input_images_reverse, self.batch_size, self.detection_model, self.h, self.w) # [batch, np, 4] [batch, np, 256]
             
             ious_reverse = self.calculate_iou(bounding_boxes_reverse, self.target_box)
-            cls_score_reverse = logits_reverse[:,:,self.target_label]   # torch.Size([170, 900])
+            cls_score_reverse = logits_reverse[:,:,self.target_label].max(dim=-1)[0]   # torch.Size([170, 900])
             
             deletion_scores = (ious_reverse * cls_score_reverse).max(dim=-1)[0]
             
@@ -225,7 +225,7 @@ class DetectionSubModularExplanation(object):
         Args:
             image (cv2 format): (h, w, 3)
             V_set (_type_): (n, h, w, 3)
-            class_id (int): which classes?
+            class_id (List [int, ...]): which classes?
             given_box (xyxy): which boxes?
         """
         self.save_file_init()
@@ -238,7 +238,7 @@ class DetectionSubModularExplanation(object):
         self.region_area = image_proccess.shape[1] * image_proccess.shape[2]
         
         self.V_set = V_set.copy()
-        self.target_label = class_id
+        self.target_label = torch.tensor(class_id)
         self.target_box = given_box
         self.saved_json_file["target_label"] = class_id
         
