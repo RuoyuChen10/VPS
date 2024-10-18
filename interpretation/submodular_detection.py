@@ -1,15 +1,8 @@
-import math
-import random
 import numpy as np
 
 from tqdm import tqdm
-import cv2
-from PIL import Image
 
 import torch
-import torch.nn.functional as F
-
-from concurrent.futures import ThreadPoolExecutor
 
 import time
 
@@ -24,6 +17,7 @@ class DetectionSubModularExplanation(object):
                  lambda1 = 1.0,
                  lambda2 = 1.0,
                  batch_size = 4,    # Suggestion: [2080Ti: 4], [3090: 16]
+                 mode = "object",   # object, iou, cls
                  device = "cuda"):
         """_summary_
 
@@ -46,6 +40,7 @@ class DetectionSubModularExplanation(object):
         self.device = device
         
         self.batch_size = batch_size
+        self.mode = mode
         
     def save_file_init(self):
         self.saved_json_file = {}
@@ -62,6 +57,7 @@ class DetectionSubModularExplanation(object):
         self.saved_json_file["target_box"] = []
         self.saved_json_file["lambda1"] = self.lambda1
         self.saved_json_file["lambda2"] = self.lambda2
+        self.saved_json_file["mode"] = self.mode
     
     def process_in_batches(self, images, batch_size, detection_model, h, w):
         all_bounding_boxes = []
@@ -147,9 +143,14 @@ class DetectionSubModularExplanation(object):
             # timer = time.time()
             
             ious = self.calculate_iou(bounding_boxes, self.target_box)
+            if self.mode == "cls":
+                ious_clip = (ious>0.5).int()
+            elif self.mode == "object":
+                ious_clip = ious
+            
             cls_score = logits[:,:,self.target_label].max(dim=-1)[0]   # torch.Size([170, 900])
             
-            insertion_scores = (ious * cls_score).max(dim=-1)[0]
+            insertion_scores = (ious_clip * cls_score).max(dim=-1)[0]
             
             # print("Stage 3 time comsume: {}".format(time.time()-timer))
             # timer = time.time()
@@ -158,9 +159,14 @@ class DetectionSubModularExplanation(object):
             bounding_boxes_reverse, logits_reverse = self.process_in_batches(batch_input_images_reverse, self.batch_size, self.detection_model, self.h, self.w) # [batch, np, 4] [batch, np, 256]
             
             ious_reverse = self.calculate_iou(bounding_boxes_reverse, self.target_box)
+            if self.mode == "cls":
+                ious_reverse_clip = (ious_reverse>0.5).int()
+            elif self.mode == "object":
+                ious_reverse_clip = ious_reverse
+            
             cls_score_reverse = logits_reverse[:,:,self.target_label].max(dim=-1)[0]   # torch.Size([170, 900])
             
-            deletion_scores = (ious_reverse * cls_score_reverse).max(dim=-1)[0]
+            deletion_scores = (ious_reverse_clip * cls_score_reverse).max(dim=-1)[0]
             
             # print("Stage 4 time comsume: {}".format(time.time()-timer))
             # timer = time.time()
