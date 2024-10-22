@@ -227,7 +227,7 @@ def main(args):
         
         # Save json file
         with open(
-            os.path.join(save_json_root_path, info["file_name"].replace("/", "_").replace(".jpg", ".json")), "w") as f:
+            os.path.join(save_json_root_path, info["file_name"].replace("/", "_").replace(".jpg", "_{}.json".format(info["id"]))), "w") as f:
             f.write(json.dumps(saved_json_file, ensure_ascii=False, indent=4, separators=(',', ':')))
          
     return
