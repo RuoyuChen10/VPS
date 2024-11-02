@@ -4,7 +4,7 @@ dataset="datasets/lvis_v1"
 eval_list="datasets/lvis_v1_rare_groundingdino_correct_detection.json"
 lambda1=1
 lambda2=1
-division_number=100
+division_number=50
 save_dir="./submodular_results/grounding-dino-lvis-v1-correctly/"
 
 declare -a cuda_devices=("0" "1")

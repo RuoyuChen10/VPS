@@ -41,10 +41,10 @@ def parse_args():
                         help='steps.')
     parser.add_argument('--eval-list',
                         type=str,
-                        default='datasets/lvis_v1_rare_groundingdino_misclassification.json',
+                        default='datasets/lvis_v1_rare_groundingdino_misdetect.json',
                         help='Datasets.')
     parser.add_argument('--eval-dir', 
-                        type=str, default='./baseline_results/grounding-dino-lvis-misclassification/HsicAttributionMethod',
+                        type=str, default='./baseline_results/grounding-dino-lvis-misdetect/HsicAttributionMethod/',
                         help='output directory to save results')
     args = parser.parse_args()
     return args
@@ -141,8 +141,8 @@ def main(args):
     with open(args.eval_list, 'r', encoding='utf-8') as f:
         val_file = json.load(f)
     
-    select_infos = val_file["case2"]
-    for info in tqdm(select_infos[80:]):
+    select_infos = val_file["case3"]
+    for info in tqdm(select_infos[:]):
         # if os.path.exists(
         #     os.path.join(json_save_dir, info["file_name"].replace(".jpg", ".json"))
         # ):

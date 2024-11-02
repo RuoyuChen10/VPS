@@ -48,10 +48,10 @@ def parse_args():
                         help='Datasets.')
     parser.add_argument('--eval-list',
                         type=str,
-                        default='datasets/lvis_v1_rare_groundingdino_misclassification.json',
+                        default='datasets/lvis_v1_rare_groundingdino_misdetect.json',
                         help='Datasets.')
     parser.add_argument('--save-dir', 
-                        type=str, default='./baseline_results/grounding-dino-lvis-misclassification/',
+                        type=str, default='./baseline_results/grounding-dino-lvis-misdetect/',
                         help='output directory to save results')
     args = parser.parse_args()
     return args
@@ -192,7 +192,7 @@ def main(args):
     # build the explainers
     explainers = [
                 # Rise(wrapped_model, nb_samples=5000, grid_size=16, batch_size=batch_size),
-                HsicAttributionMethod(wrapped_model, nb_design=1500, grid_size=16, batch_size=batch_size),
+                HsicAttributionMethod(wrapped_model, nb_design=1000, grid_size=16, batch_size=batch_size),
     ]
     
     for explainer in explainers:
@@ -200,8 +200,8 @@ def main(args):
             os.path.join(args.save_dir, explainer.__class__.__name__), "npy")
         mkdir(save_dir)
         
-        select_infos = val_file["case2"]
-        for info in tqdm(select_infos[80:]):
+        select_infos = val_file["case3"]
+        for info in tqdm(select_infos[300:]):
             if os.path.exists(
                 os.path.join(save_dir, info["file_name"].replace("/", "_").replace(".jpg", "_{}.npy".format(info["id"])))
             ):
@@ -236,7 +236,7 @@ def main(args):
             explainer.model.model.caption = caption
             explainer.model.model.target_label = classes_grounding_idx[info["category"]]
             explainer.model.model.target_box = info["bbox"]
-            explainer.model.model.h, wrapped_model.model.w = image.shape[:2]
+            explainer.model.model.h, explainer.model.model.w = image.shape[:2]
             
             explanations = explainer(X_preprocessed4explainer, Y)
             
