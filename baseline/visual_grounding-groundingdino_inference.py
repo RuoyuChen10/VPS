@@ -20,6 +20,10 @@ from tqdm import tqdm
 
 from utils import *
 
+import argparse
+from tqdm import tqdm
+
+
 data_transform = T.Compose(
     [
         T.RandomResize([800], max_size=1333),
@@ -33,7 +37,7 @@ def parse_args():
     # general
     parser.add_argument('--Datasets',
                         type=str,
-                        default='datasets/coco/val2017',
+                        default='datasets/',
                         help='Datasets.')
     parser.add_argument('--steps',
                         type=int,
@@ -41,10 +45,10 @@ def parse_args():
                         help='steps.')
     parser.add_argument('--eval-list',
                         type=str,
-                        default='datasets/coco_groundingdino_correct_detection.json',
+                        default='datasets/refcoco_val_groundingdino_mistake.json',
                         help='Datasets.')
     parser.add_argument('--eval-dir', 
-                        type=str, default='./baseline_results/grounding-dino-coco-correctly/ODAM/',
+                        type=str, default='./baseline_results/grounding-dino-refcoco-mistake/gradcam/',
                         help='output directory to save results')
     args = parser.parse_args()
     return args
@@ -102,7 +106,6 @@ def perturbed(image, mask, rate = 0.5, mode = "insertion"):
         index = np.argsort(-mask_flatten)
         new_mask[index[:number]] = 1
 
-        
     elif mode == "deletion":
         new_mask = np.ones_like(mask_flatten)
         index = np.argsort(-mask_flatten)
@@ -112,27 +115,20 @@ def perturbed(image, mask, rate = 0.5, mode = "insertion"):
     
     perturbed_image = image * new_mask
     return perturbed_image.astype(np.uint8)
-
+    
 def main(args):
-    # model init
+    # set batch size parameter
     device = "cuda"
+    # model init
     # Load the model
-    model = load_model("config/GroundingDINO_SwinT_OGC.py", "ckpt/groundingdino_swint_ogc.pth")
+    model = load_model("config/GroundingDINO_SwinB_cfg.py", "ckpt/groundingdino_swinb_cogcoor.pth")
     model.to(device)
-    # caption = preprocess_caption(caption=COCO_TEXT_PROMPT)
     print("Load Grounding DINO model!")
     
-    if "coco" in args.eval_list:
-        caption = preprocess_caption(caption=COCO_TEXT_PROMPT)
-        classes_grounding_idx = coco_classes_grounding_idx
-    
-    elif "lvis" in args.eval_list:
-        caption1 = preprocess_caption(caption=LVIS_RARE_TEXT_PROMPT_SPLIT_1)
-        caption2 = preprocess_caption(caption=LVIS_RARE_TEXT_PROMPT_SPLIT_2)
-        caption3 = preprocess_caption(caption=LVIS_RARE_TEXT_PROMPT_SPLIT_3)
-        caption4 = preprocess_caption(caption=LVIS_RARE_TEXT_PROMPT_SPLIT_4)
-        caption5 = preprocess_caption(caption=LVIS_RARE_TEXT_PROMPT_SPLIT_5)
-    
+    # Read datasets
+    with open(args.eval_list, 'r', encoding='utf-8') as f:
+        val_file = json.load(f)
+        
     json_save_dir = os.path.join(args.eval_dir, "json")
     mkdir(json_save_dir)
     npy_dir = os.path.join(args.eval_dir, "npy")
@@ -141,55 +137,23 @@ def main(args):
     with open(args.eval_list, 'r', encoding='utf-8') as f:
         val_file = json.load(f)
     
-    id = 1
-    
-    select_infos = val_file["case1"]
+    select_infos = val_file["case2"]
     for info in tqdm(select_infos[:]):
-        # if os.path.exists(
-        #     os.path.join(json_save_dir, info["file_name"].replace(".jpg", ".json"))
-        # ):
-        #     continue
-        # if os.path.exists(
-        #     os.path.join(json_save_dir, info["file_name"].replace("/", "_").replace(".jpg", "_{}.json").format(info["id"]))
-        # ):
-        #     continue
-        if "coco" in args.eval_list:
-            if os.path.exists(
-                os.path.join(json_save_dir, info["file_name"].replace("/", "_").replace(".jpg", "_{}.json").format(id))
-            ):
-                continue
-        
-        if "lvis" in args.eval_list:
-            if info["category"] in lvis_classes_split_1:
-                caption = caption1
-                classes_grounding_idx = lvis_classes_grounding_idx_split1
-            elif info["category"] in lvis_classes_split_2:
-                caption = caption2
-                classes_grounding_idx = lvis_classes_grounding_idx_split2
-            elif info["category"] in lvis_classes_split_3:
-                caption = caption3
-                classes_grounding_idx = lvis_classes_grounding_idx_split3
-            elif info["category"] in lvis_classes_split_4:
-                caption = caption4
-                classes_grounding_idx = lvis_classes_grounding_idx_split4
-            elif info["category"] in lvis_classes_split_5:
-                caption = caption5
-                classes_grounding_idx = lvis_classes_grounding_idx_split5
+        if os.path.exists(
+            os.path.join(json_save_dir, info["file_name"].split("/")[-1].replace(".jpg", "_{}.json".format(info["id"])))
+        ):
+            continue
+        TEXT_PROMPT = info["category"]
+        caption = preprocess_caption(caption=TEXT_PROMPT)
         
         image_path = os.path.join(args.Datasets, info["file_name"])
         image = cv2.imread(image_path)
         
-        if "coco" in args.eval_list:
-            saliency_map = np.load(
-                os.path.join(npy_dir, info["file_name"].replace(".jpg", "_{}.npy").format(id))
-            )
-        elif "lvis" in args.eval_list:
-            saliency_map = np.load(
-                os.path.join(npy_dir, info["file_name"].replace("/", "_").replace(".jpg", "_{}.npy").format(info["id"]))
-            )
+        saliency_map = np.load(
+            os.path.join(npy_dir, info["file_name"].split("/")[-1].replace(".jpg", "_{}.npy".format(info["id"])))
+        )
         
         target_box = info["bbox"]
-        target_label = classes_grounding_idx[info["category"]]
         h,w = image.shape[:2]
         
         json_file = {}
@@ -203,17 +167,15 @@ def main(args):
         json_file["deletion_cls"] = []
         json_file["region_area"] = []
         json_file["target_box"] = target_box
-        json_file["target_label"] = target_label
+        json_file["category"] = info["category"]
         
         for i in range(1, args.steps+1):
             perturbed_rate = i / args.steps
             json_file["region_area"].append(perturbed_rate)
             
-            target_label = torch.tensor(target_label)
-            
             # insertion
             insertion_image = perturbed(image, saliency_map, rate = perturbed_rate, mode = "insertion")
-            cv2.imwrite("insertion.jpg", insertion_image)
+            # cv2.imwrite("insertion.jpg", insertion_image)
             image_proccess = transform_vision_data(insertion_image)
             with torch.no_grad():
                 out = model(image_proccess.unsqueeze(0).to(device), captions=[caption])
@@ -223,8 +185,7 @@ def main(args):
                 boxes = prediction_boxes * torch.Tensor([w, h, w, h])
                 xyxy = box_convert(boxes=boxes, in_fmt="cxcywh", out_fmt="xyxy")
                 ious = calculate_iou(xyxy, target_box)
-                cls_score = logits[:,:,target_label].max(dim=-1)[0]
-                
+                cls_score = logits.max(dim=-1)[0]
                 insertion_scores = (ious * cls_score).max(dim=-1)[0]
                 
                 insertion_idx = (ious * cls_score)[0].argmax().cpu().item()
@@ -235,7 +196,6 @@ def main(args):
             
             # deletion
             deletion_image = perturbed(image, saliency_map, rate = perturbed_rate, mode = "deletion")
-            cv2.imwrite("deletion.jpg", deletion_image)
             
             image_proccess = transform_vision_data(deletion_image)
             with torch.no_grad():
@@ -246,7 +206,7 @@ def main(args):
                 boxes = prediction_boxes * torch.Tensor([w, h, w, h])
                 xyxy = box_convert(boxes=boxes, in_fmt="cxcywh", out_fmt="xyxy")
                 ious = calculate_iou(xyxy, target_box)
-                cls_score = logits[:,:,target_label].max(dim=-1)[0]
+                cls_score = logits.max(dim=-1)[0]
                 
                 deletion_scores = (ious * cls_score).max(dim=-1)[0]
                 
@@ -256,21 +216,14 @@ def main(args):
                 json_file["deletion_iou"].append(ious[0][deletion_idx].cpu().item())
                 json_file["deletion_box"].append(xyxy[0][deletion_idx].cpu().numpy().astype(int).tolist())
                 json_file["deletion_cls"].append(cls_score[0][deletion_idx].cpu().item())
-        
+                
         # Save json file
-        if "coco" in args.eval_list:
-            with open(
-                os.path.join(json_save_dir, info["file_name"].replace(".jpg", "_{}.json").format(id)), "w") as f:
-                f.write(json.dumps(json_file, ensure_ascii=False, indent=4, separators=(',', ':')))
-        elif "lvis" in args.eval_list:
-            with open(
-                os.path.join(json_save_dir, info["file_name"].replace("/", "_").replace(".jpg", "_{}.json").format(info["id"])), "w") as f:
-                f.write(json.dumps(json_file, ensure_ascii=False, indent=4, separators=(',', ':')))
-        
-        id += 1
+        with open(
+            os.path.join(json_save_dir, info["file_name"].split("/")[-1].replace(".jpg", "_{}.json".format(info["id"]))), "w") as f:
+            f.write(json.dumps(json_file, ensure_ascii=False, indent=4, separators=(',', ':')))
 
-    
 if __name__ == "__main__":
     args = parse_args()
     
     main(args)
+            
