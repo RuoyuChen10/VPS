@@ -1,4 +1,4 @@
-# Object Detection Interpretation
+# Interpreting Object-level Foundation Models via Visual Precision Search
 
 ## 📰 News & Update
 
@@ -12,6 +12,9 @@ We provide code to explain Grounding DINO, but please install its dependencies f
 
 For explaining Florence-2, please install its dependencies: [https://huggingface.co/microsoft/Florence-2-large-ft](https://huggingface.co/microsoft/Florence-2-large-ft)
 
+For explaining traditional detectors, please install MMDetection v3.3: [https://github.com/open-mmlab/mmdetection/](https://github.com/open-mmlab/mmdetection)
+
+In addition, please follow the [datasets/readme.md](datasets/readme.md) and [ckpt/readme.md](ckpt/readme.md) to organize the dataset and download the weights of the relevant detectors.
 
 ## 😮 Highlights
 
@@ -30,3 +33,5 @@ Florence-2:
 [SMDL-Attribution](https://github.com/RuoyuChen10/SMDL-Attribution): SOTA attribution method based on submodular subset selection
 
 [Grounding DINO](https://github.com/IDEA-Research/GroundingDINO): an open-set object detector.
+
+[MMDetection V3.3](https://github.com/open-mmlab/mmdetection): an open source object detection toolbox based on PyTorch.

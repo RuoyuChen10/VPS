@@ -159,7 +159,9 @@ def main(args):
         detection_model,
         transform_vision_data,
         device="cuda",
-        batch_size=20
+        batch_size=20,
+        lambda1 = args.lambda1,
+        lambda2 = args.lambda2
     )
     
     # Read datasets

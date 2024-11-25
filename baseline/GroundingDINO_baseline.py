@@ -191,8 +191,8 @@ def main(args):
     
     # build the explainers
     explainers = [
-                # Rise(wrapped_model, nb_samples=5000, grid_size=16, batch_size=batch_size),
-                HsicAttributionMethod(wrapped_model, nb_design=1000, grid_size=16, batch_size=batch_size),
+                Rise(wrapped_model, nb_samples=5000, grid_size=16, batch_size=batch_size),
+                # HsicAttributionMethod(wrapped_model, nb_design=1000, grid_size=16, batch_size=batch_size),
     ]
     
     for explainer in explainers:

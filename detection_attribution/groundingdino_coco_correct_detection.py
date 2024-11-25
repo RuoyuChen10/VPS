@@ -155,6 +155,8 @@ def main(args):
     smdl = DetectionSubModularExplanation(
         detection_model,
         transform_vision_data,
+        lambda1=args.lambda1,
+        lambda2=args.lambda2,
         device="cuda",
         batch_size=20
     )
