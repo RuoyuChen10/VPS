@@ -122,11 +122,13 @@ def main(args):
     
     id = 1
     select_infos = val_file["case1"]
-    for info in tqdm(select_infos[:]):
-        if os.path.exists(
-            os.path.join(save_dir, info["file_name"].replace(".jpg", "_{}.npy".format(id)))
-        ):
-            continue
+    for info in tqdm(select_infos[id-1:]):
+        if "coco" in args.eval_list:
+            if os.path.exists(
+                os.path.join(save_dir, info["file_name"].replace("/", "_").replace(".jpg", "_{}.npy").format(id))
+            ):
+                id+=1
+                continue
         
         if "lvis" in args.eval_list:
             if info["category"] in lvis_classes_split_1:

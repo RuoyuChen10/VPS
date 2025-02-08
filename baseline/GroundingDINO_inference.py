@@ -13,7 +13,6 @@ from groundingdino.util.inference import load_model, load_image, predict, annota
 import groundingdino.datasets.transforms as T
 
 from torchvision.ops import box_convert
-from utils import *
 
 import argparse
 from tqdm import tqdm
@@ -44,7 +43,7 @@ def parse_args():
                         default='datasets/coco_groundingdino_correct_detection.json',
                         help='Datasets.')
     parser.add_argument('--eval-dir', 
-                        type=str, default='./baseline_results/grounding-dino-coco-correctly/ODAM/',
+                        type=str, default='./baseline_results/grounding-dino-coco-correctly/HsicAttributionMethod/',
                         help='output directory to save results')
     args = parser.parse_args()
     return args
@@ -144,7 +143,7 @@ def main(args):
     id = 1
     
     select_infos = val_file["case1"]
-    for info in tqdm(select_infos[:]):
+    for info in tqdm(select_infos[id-1:]):
         # if os.path.exists(
         #     os.path.join(json_save_dir, info["file_name"].replace(".jpg", ".json"))
         # ):
@@ -157,6 +156,7 @@ def main(args):
             if os.path.exists(
                 os.path.join(json_save_dir, info["file_name"].replace("/", "_").replace(".jpg", "_{}.json").format(id))
             ):
+                id += 1
                 continue
         
         if "lvis" in args.eval_list:

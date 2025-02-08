@@ -111,11 +111,18 @@ def main(args):
     mkdir(save_dir)
     
     select_infos = val_file["case3"]
-    for info in tqdm(select_infos[:]):
-        if os.path.exists(
-            os.path.join(save_dir, info["file_name"].replace(".jpg", ".npy"))
-        ):
-            continue
+    id = 1
+    for info in tqdm(select_infos[id-1:]):
+        # if os.path.exists(
+        #     os.path.join(save_dir, info["file_name"].replace(".jpg", ".npy"))
+        # ):
+        #     continue
+        if "coco" in args.eval_list:
+            if os.path.exists(
+                os.path.join(save_dir, info["file_name"].replace("/", "_").replace(".jpg", "_{}.npy").format(id))
+            ):
+                id+=1
+                continue
         
         image_path = os.path.join(args.Datasets, info["file_name"])
         image = cv2.imread(image_path)
@@ -167,7 +174,11 @@ def main(args):
         
         model.unset_image_tensor()
         
-        np.save(os.path.join(save_dir, info["file_name"].replace(".jpg", ".npy")), saliency_map_final)
+        if "coco" in args.eval_list:
+            np.save(os.path.join(save_dir, info["file_name"].replace(".jpg", "_{}.npy").format(id)), saliency_map)
+        # np.save(os.path.join(save_dir, info["file_name"].replace(".jpg", ".npy")), saliency_map_final)
+        
+        id += 1
 
 if __name__ == "__main__":
     args = parse_args()

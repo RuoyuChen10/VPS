@@ -180,12 +180,15 @@ def main(args):
     if end == -1:
         end = None
     select_infos = val_file["case1"][args.begin : end]
+    id = args.begin + 1
+    
     for info in tqdm(select_infos):
         if os.path.exists(
-            os.path.join(save_json_root_path, info["file_name"].replace(".jpg", ".json"))
+            os.path.join(save_json_root_path, info["file_name"].replace(".jpg", "_{}.json".format(id)))
         ):
+            id += 1
             continue
-        
+
         target_class = coco_classes_grounding_idx[info["category"]]
         target_box = info["bbox"]
         image_path = os.path.join(args.Datasets, info["file_name"])
@@ -204,15 +207,16 @@ def main(args):
         
         # Save npy file
         np.save(
-            os.path.join(save_npy_root_path, info["file_name"].replace(".jpg", ".npy")),
+            os.path.join(save_npy_root_path, info["file_name"].replace(".jpg", "_{}.npy".format(id))),
             np.array(S_set)
         )
         
         # Save json file
         with open(
-            os.path.join(save_json_root_path, info["file_name"].replace(".jpg", ".json")), "w") as f:
+            os.path.join(save_json_root_path, info["file_name"].replace(".jpg", "_{}.json".format(id))), "w") as f:
             f.write(json.dumps(saved_json_file, ensure_ascii=False, indent=4, separators=(',', ':')))
          
+        id += 1
     return
 
 if __name__ == "__main__":

@@ -200,13 +200,20 @@ def main(args):
             os.path.join(args.save_dir, explainer.__class__.__name__), "npy")
         mkdir(save_dir)
         
-        select_infos = val_file["case3"]
-        for info in tqdm(select_infos[300:]):
-            if os.path.exists(
-                os.path.join(save_dir, info["file_name"].replace("/", "_").replace(".jpg", "_{}.npy".format(info["id"])))
-            ):
-                continue
-            
+        select_infos = val_file["case1"]
+        id = 1
+        for info in tqdm(select_infos[id-1:]):
+            # if os.path.exists(
+            #     os.path.join(save_dir, info["file_name"].replace("/", "_").replace(".jpg", "_{}.npy".format(info["id"])))
+            # ):
+            #     continue
+            if "coco" in args.eval_list:
+                if os.path.exists(
+                    os.path.join(save_dir, info["file_name"].replace("/", "_").replace(".jpg", "_{}.npy").format(id))
+                ):
+                    id+=1
+                    continue
+        
             if "lvis" in args.eval_list:
                 if info["category"] in lvis_classes_split_1:
                     caption = caption1
@@ -245,12 +252,15 @@ def main(args):
             # np.save(os.path.join(save_dir, info["file_name"].replace(".jpg", "_{}.npy").format(info["category"])), saliency_map)
             
             if "coco" in args.eval_list:
-                np.save(os.path.join(save_dir, info["file_name"].replace(".jpg", ".npy")), saliency_map)
+                np.save(os.path.join(save_dir, info["file_name"].replace(".jpg", "_{}.npy").format(id)), saliency_map)
+
             elif "lvis" in args.eval_list:
                 np.save(
                     os.path.join(save_dir, info["file_name"].replace("/", "_").replace(".jpg", "_{}.npy".format(info["id"]))),
                     saliency_map
             )
+                
+            id += 1
             
 if __name__ == "__main__":
     args = parse_args()
