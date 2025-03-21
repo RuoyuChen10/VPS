@@ -1,6 +1,8 @@
-# Interpreting Object-level Foundation Models via Visual Precision Search
+<h2 align="center"> <a href="https://openreview.net/forum?id=jKTUlxo5zy">【CVPR 2025 🔥】Interpreting Object-level Foundation Models via Visual Precision Search</a></h2>
+<h5 align="center"> If you like our project, please give us a star ⭐ on GitHub for latest update.  </h2>
 
 [![arXiv](https://img.shields.io/badge/Arxiv-2411.16198-b31b1b.svg?logo=arXiv)](https://arxiv.org/abs/2411.16198)
+![License CC BY-NC](https://img.shields.io/badge/license-Apache_2.0-green.svg?style=plastic)
 
 <!-- ![](./images/conceptual.jpg) -->
 
