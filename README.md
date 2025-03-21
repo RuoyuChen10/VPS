@@ -10,6 +10,8 @@
 
 ## 📰 News & Update
 
+- **[2025.02.29]** Our paper was successfully accepted by CVPR 2025.
+
 - **[2025.02.08]** We release the official code of VPS, a new interpretation mechanism.
 
 - **[2024.09.30]** We begin to investigate the potential of interpretability in object detection.
