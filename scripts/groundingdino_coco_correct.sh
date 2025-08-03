@@ -5,7 +5,7 @@ eval_list="datasets/coco_groundingdino_correct_detection.json"
 lambda1=1
 lambda2=1
 division_number=64
-save_dir="./submodular_results/grounding-dino-correctly/"
+save_dir="./submodular_results_yanshou/grounding-dino-correctly/"
 
 declare -a cuda_devices=("0" "1")
 
